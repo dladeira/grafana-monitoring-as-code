@@ -1,0 +1,41 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  build-json:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build Docker image
+        run: docker build -t grafana-monitoring-as-code:ci .
+
+      - name: Generate latest-dashboard.json
+        run: |
+          docker run --rm grafana-monitoring-as-code:ci > latest-dashboard.json
+          test -s latest-dashboard.json
+
+      - name: Commit latest-dashboard.json
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add latest-dashboard.json
+          git diff --staged --quiet || git commit -m "chore(robot): updated latest-dashboard.json"
+          git push
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: latest-dashboard-json
+          path: latest-dashboard.json
