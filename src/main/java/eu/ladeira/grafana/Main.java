@@ -8,49 +8,87 @@ import com.grafana.foundation.prometheus.DataqueryBuilder;
 import com.grafana.foundation.timeseries.PanelBuilder;
 
 public class Main {
-    public static void main(String[] args) throws JsonProcessingException {
-        Dashboard dashboard = new DashboardBuilder("Instance1 - System Metrics").
-                uid("instance1-system-metrics")
-                .refresh("1m")
+    private static final String DASHBOARD_TITLE = "Instance1 - System Metrics";
+    private static final String DASHBOARD_UID = "instance1-system-metrics";
+    private static final String DASHBOARD_REFRESH = "1m";
+    private static final String TIME_FROM = "now-30m";
+    private static final String TIME_TO = "now";
+
+    private static final String ROW_TITLE_CURRENT = "Current CPU Usage";
+    private static final String ROW_TITLE_USAGE = "Usage Over time";
+
+    private static final String TITLE_CPU_CURRENT = "Current CPU Usage (%)";
+    private static final String EXPR_CPU_CURRENT = "cpu_usage";
+
+    private static final String TITLE_CPU_P95_30M = "CPU Usage - P95 (Last 30min, %)";
+    private static final String EXPR_CPU_P95_30M = "quantile_over_time(0.95, cpu_usage[30m])";
+
+    private static final String TITLE_CPU_AVG = "Instance1 - CPU Usage (avg 1min, %)";
+    private static final String EXPR_CPU_AVG = "avg_over_time(cpu_usage[1m])";
+
+    private static final String TITLE_CPU_P95_5M = "Instance1 - CPU Usage (p95 5min, %)";
+    private static final String EXPR_CPU_P95_5M = "quantile_over_time(0.95, cpu_usage[5m])";
+
+    public static void main(String[] args) {
+        try {
+            Dashboard dashboard = buildDashboard();
+            System.out.println(dashboard.toJSON());
+        } catch (JsonProcessingException e) {
+            System.err.println("Failed to serialize dashboard to JSON: " + e.getMessage());
+            e.printStackTrace(System.err);
+            System.exit(1);
+        }
+    }
+
+    private static Dashboard buildDashboard() {
+        return new DashboardBuilder(DASHBOARD_TITLE)
+                .uid(DASHBOARD_UID)
+                .refresh(DASHBOARD_REFRESH)
                 .time(new DashboardDashboardTimeBuilder()
-                        .from("now-30m")
-                        .to("now")
+                        .from(TIME_FROM)
+                        .to(TIME_TO)
                 )
                 .timezone(Constants.TimeZoneBrowser)
-                .withRow(new RowBuilder("Current CPU Usage"))
-                .withPanel(new com.grafana.foundation.stat.PanelBuilder()
-                        .title("Current CPU Usage (%)")
-                        .unit("%")
-                        .graphMode(BigValueGraphMode.NONE)
-                        .transparent(true)
-                        .withTarget(new DataqueryBuilder()
-                                .expr("cpu_usage")
-                        )
-                ).withPanel(new com.grafana.foundation.stat.PanelBuilder()
-                        .title("CPU Usage - P95 (Last 30min, %)")
-                        .unit("%")
-                        .graphMode(BigValueGraphMode.NONE)
-                        .transparent(true)
-                        .withTarget(new DataqueryBuilder()
-                                .expr("quantile_over_time(0.95, cpu_usage[30m])")
-                        )
-                ).withRow(new RowBuilder("Usage Over time"))
-                .withPanel(new PanelBuilder()
-                        .title("Instance1 - CPU Usage (avg, %)")
-                        .unit("%")
-                        .min(0.0)
-                        .withTarget(new DataqueryBuilder()
-                                .expr("cpu_usage")
-                        )
-                ).withPanel(new PanelBuilder()
-                        .title("Instance1 - CPU Usage (p95 5min, %)")
-                        .unit("%")
-                        .min(0.0)
-                        .withTarget(new DataqueryBuilder()
-                                .expr("quantile_over_time(0.95, cpu_usage[5m])")
-                        )
-                ).build();
+                .withRow(new RowBuilder(ROW_TITLE_CURRENT))
+                .withPanel(buildCurrentCpuStatPanel())
+                .withPanel(buildCpuP95Last30MinStatPanel())
+                .withRow(new RowBuilder(ROW_TITLE_USAGE))
+                .withPanel(buildCpuAvgTimeseriesPanel())
+                .withPanel(buildCpuP95Last5MinTimeseriesPanel())
+                .build();
+    }
 
-        System.out.println(dashboard.toJSON());
+    private static com.grafana.foundation.stat.PanelBuilder buildCurrentCpuStatPanel() {
+        return new com.grafana.foundation.stat.PanelBuilder()
+                .title(TITLE_CPU_CURRENT)
+                .unit("%")
+                .graphMode(BigValueGraphMode.NONE)
+                .transparent(true)
+                .withTarget(new DataqueryBuilder().expr(EXPR_CPU_CURRENT));
+    }
+
+    private static com.grafana.foundation.stat.PanelBuilder buildCpuP95Last30MinStatPanel() {
+        return new com.grafana.foundation.stat.PanelBuilder()
+                .title(TITLE_CPU_P95_30M)
+                .unit("%")
+                .graphMode(BigValueGraphMode.NONE)
+                .transparent(true)
+                .withTarget(new DataqueryBuilder().expr(EXPR_CPU_P95_30M));
+    }
+
+    private static PanelBuilder buildCpuAvgTimeseriesPanel() {
+        return new PanelBuilder()
+                .title(TITLE_CPU_AVG)
+                .unit("%")
+                .min(0.0)
+                .withTarget(new DataqueryBuilder().expr(EXPR_CPU_AVG));
+    }
+
+    private static PanelBuilder buildCpuP95Last5MinTimeseriesPanel() {
+        return new PanelBuilder()
+                .title(TITLE_CPU_P95_5M)
+                .unit("%")
+                .min(0.0)
+                .withTarget(new DataqueryBuilder().expr(EXPR_CPU_P95_5M));
     }
 }
