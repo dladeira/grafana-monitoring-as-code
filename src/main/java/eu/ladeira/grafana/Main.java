@@ -61,7 +61,7 @@ public class Main {
     private static com.grafana.foundation.stat.PanelBuilder buildCurrentCpuStatPanel() {
         return new com.grafana.foundation.stat.PanelBuilder()
                 .title(TITLE_CPU_CURRENT)
-                .unit("%")
+                .unit("percent")
                 .graphMode(BigValueGraphMode.NONE)
                 .transparent(true)
                 .withTarget(new DataqueryBuilder().expr(EXPR_CPU_CURRENT));
@@ -70,7 +70,7 @@ public class Main {
     private static com.grafana.foundation.stat.PanelBuilder buildCpuP95Last30MinStatPanel() {
         return new com.grafana.foundation.stat.PanelBuilder()
                 .title(TITLE_CPU_P95_30M)
-                .unit("%")
+                .unit("percent")
                 .graphMode(BigValueGraphMode.NONE)
                 .transparent(true)
                 .withTarget(new DataqueryBuilder().expr(EXPR_CPU_P95_30M));
@@ -79,7 +79,7 @@ public class Main {
     private static PanelBuilder buildCpuAvgTimeseriesPanel() {
         return new PanelBuilder()
                 .title(TITLE_CPU_AVG)
-                .unit("%")
+                .unit("percent")
                 .min(0.0)
                 .withTarget(new DataqueryBuilder().expr(EXPR_CPU_AVG));
     }
@@ -87,7 +87,7 @@ public class Main {
     private static PanelBuilder buildCpuP95Last5MinTimeseriesPanel() {
         return new PanelBuilder()
                 .title(TITLE_CPU_P95_5M)
-                .unit("%")
+                .unit("percent")
                 .min(0.0)
                 .withTarget(new DataqueryBuilder().expr(EXPR_CPU_P95_5M));
     }
