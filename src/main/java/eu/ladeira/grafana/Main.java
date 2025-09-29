@@ -1,11 +1,9 @@
 package eu.ladeira.grafana;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.grafana.foundation.common.BigValueGraphMode;
 import com.grafana.foundation.common.Constants;
-import com.grafana.foundation.dashboard.Dashboard;
-import com.grafana.foundation.dashboard.DashboardBuilder;
-import com.grafana.foundation.dashboard.DashboardDashboardTimeBuilder;
-import com.grafana.foundation.dashboard.RowBuilder;
+import com.grafana.foundation.dashboard.*;
 import com.grafana.foundation.prometheus.DataqueryBuilder;
 import com.grafana.foundation.timeseries.PanelBuilder;
 
@@ -19,7 +17,24 @@ public class Main {
                         .to("now")
                 )
                 .timezone(Constants.TimeZoneBrowser)
-                .withRow(new RowBuilder("Overview"))
+                .withRow(new RowBuilder("Current CPU Usage"))
+                .withPanel(new com.grafana.foundation.stat.PanelBuilder()
+                        .title("Current CPU Usage (%)")
+                        .unit("%")
+                        .graphMode(BigValueGraphMode.NONE)
+                        .transparent(true)
+                        .withTarget(new DataqueryBuilder()
+                                .expr("cpu_usage")
+                        )
+                ).withPanel(new com.grafana.foundation.stat.PanelBuilder()
+                        .title("CPU Usage - P95 (Last 30min, %)")
+                        .unit("%")
+                        .graphMode(BigValueGraphMode.NONE)
+                        .transparent(true)
+                        .withTarget(new DataqueryBuilder()
+                                .expr("quantile_over_time(0.95, cpu_usage[30m])")
+                        )
+                ).withRow(new RowBuilder("Usage Over time"))
                 .withPanel(new PanelBuilder()
                         .title("Instance1 - CPU Usage (avg, %)")
                         .unit("%")
@@ -28,7 +43,7 @@ public class Main {
                                 .expr("cpu_usage")
                         )
                 ).withPanel(new PanelBuilder()
-                        .title("Instance1 - CPU Usage (p95, %)")
+                        .title("Instance1 - CPU Usage (p95 5min, %)")
                         .unit("%")
                         .min(0.0)
                         .withTarget(new DataqueryBuilder()
