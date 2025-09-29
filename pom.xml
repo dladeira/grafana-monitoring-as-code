@@ -18,7 +18,12 @@
         <dependency>
             <groupId>com.grafana</groupId>
             <artifactId>grafana-foundation-sdk</artifactId>
-            <version>11.6.0-1758039791</version>
+            <version>11.0.0-1738936519</version>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-core</artifactId>
+            <version>2.16.2</version> <!-- use latest stable -->
         </dependency>
     </dependencies>
 </project>
